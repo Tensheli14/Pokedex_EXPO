@@ -1,4 +1,4 @@
-import { ScrollView, Text } from "react-native";
+import { ScrollView, Text, StyleSheet } from "react-native";
 import PokemonCard from "../components/PokemonCard.js";
 import Titre from "../components/Titre.js";
 
@@ -18,15 +18,10 @@ const POKEMONS = [
 
 export default function Index() {
   return (
-    <ScrollView>
-      <Titre />
-
-      <Text
-        style={{
-          textAlign: "center",
-          marginBottom: 15,
-        }}
-      >
+  <ScrollView style={styles.container}>
+    <Titre/>
+    
+    <Text style={styles.count}>
         Nombre de Pokémon : {POKEMONS.length}
       </Text>
 
@@ -41,3 +36,16 @@ export default function Index() {
     </ScrollView>
   );
 }
+
+  const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "#f5f5f5",
+  },
+
+  count: {
+    textAlign: "center",
+    marginBottom: 15,
+    fontSize: 18,
+    color: "#555",
+  },
+  });
