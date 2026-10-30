@@ -1,72 +1,70 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
 
 const ARTWORK =
-  "https://raw.githubusercontent.com/PokeAPI/sprites" +
-  "/master/sprites/pokemon/other/official-artwork/";
+    "https://raw.githubusercontent.com/PokeAPI/sprites" +
+    "/master/sprites/pokemon/other/official-artwork/";
 
+const TYPE_COLORS = {
+    Plante: "#78C850",
+    Feu: "#F08030",
+    Eau: "#6890F0",
+    Électrik: "#F8D030",
+};
+    
 export default function PokemonCard({ number, name, type }) {
-  return (
-    <View style={styles.card}>
-      <Image
-        source={{ uri: `${ARTWORK}${number}.png` }}
-        style={styles.image}
-      />
+    const [capturé, setCapturé] = useState(false);
+    const color = TYPE_COLORS[type];
 
-      <Text style={styles.number}>#{number}</Text>
-      <Text style={styles.name}>{name}</Text>
-      <Text style={styles.type}>{type}</Text>
-    </View>
-  );
+    return (
+        <View style={[styles.card, { backgroundColor: color }, capturé && styles.captured]}>
+            <Image source={{ uri: `${ARTWORK}${number}.png` }} style={styles.image} />
+            <View>
+                <Text style={styles.number}>#{number}</Text>
+                <Text style={styles.name}>{name}</Text>
+                <Text style={styles.type}>{type}</Text>
+            </View>
+            <Pressable
+                style={styles.button}
+                onPress={() => setCapturé(!capturé)}
+            >
+                <Text style={styles.buttonText}>
+                    {capturé ? "Capturé ✓" : "Capturer"}
+                </Text>
+            </Pressable>
+        </View>
+    );
+
 }
 
+
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 15,
-    marginHorizontal: 15,
-    marginVertical: 8,
-    alignItems: "center",
-
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    card: {
+        flexDirection: "row", alignItems: "center", gap: 12,
+        padding: 12, borderRadius: 14
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    image: { width: 80, height: 80 },
+    number: { color: "#888888" },
+    name: { fontSize: 18, fontWeight: "bold" },
+    type: {
+        alignSelf: "flex-start", backgroundColor: "#ECE8DE",
+        paddingHorizontal: 10, borderRadius: 10, overflow: "hidden"
+    },
+    captured: {
+        borderColor: "#000e38",
+        borderWidth: 3
+    },
+    button: {
+        marginLeft: "auto",
+        backgroundColor: "#4e4949a0",
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 6,
+    },
+    buttonText: {
+        color: "#FFFFFF",
+        fontWeight: "bold",
+        fontSize: 12,
+    },
 
-    elevation: 5,
-  },
-
-  image: {
-    width: 100,
-    height: 100,
-    marginBottom: 10,
-  },
-
-  badge: {
-    marginTop: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    color: "white",
-    fontWeight: "bold",
-  },
-
-  number: {
-    color: "#888",
-    fontSize: 14,
-  },
-
-  name: {
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-
-  type: {
-    marginTop: 5,
-    color: "#666",
-    fontSize: 16,
-  },
 });
