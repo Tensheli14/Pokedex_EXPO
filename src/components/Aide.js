@@ -15,7 +15,7 @@ export default function Aide() {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "#9f7e7e",
+    backgroundColor: "#adadadaf",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,

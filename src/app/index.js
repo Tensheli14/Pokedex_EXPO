@@ -1,37 +1,35 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { TextInput } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import Aide from "../components/Aide";
 import PokemonCard from "../components/PokemonCard";
 import Titre from "../components/Titre";
-
-const POKEMONS = [
-  { number: 1, name: "Bulbizarre", type: "Plante" },
-  { number: 4, name: "Salamèche", type: "Feu" },
-  { number: 7, name: "Carapuce", type: "Eau" },
-  { number: 25, name: "Pikachu", type: "Électrik" },
-  { number: 37, name: "Goupix", type: "Feu" },
-  { number: 43, name: "Mystherbe", type: "Plante" },
-];
+import POKEMONS from "../data/pokemons";
 
 export default function Index() {
   const [count, setCount] = useState(0);
+  const [captured, setCaptured] = useState([]);
+  const [capturesSeulement, setCapturesSeulement] = useState(false);
   const [search, setSearch] = useState("");
-  const [feuUniquement, setFeuUniquement] = useState(false);
-  const pokemonsAffiches = feuUniquement
-    ? POKEMONS.filter((pokemon) => pokemon.type === "Feu")
-    : POKEMONS;
-  const visibles = pokemonsAffiches.filter((pokemon) =>
+  const visibles = POKEMONS.filter((pokemon) =>
+    (!capturesSeulement || captured.includes(pokemon.number)) &&
     pokemon.name.toLowerCase().includes(search.toLowerCase())
   );
+  const basculerCapture = (numero) => {
+    setCaptured((actuels) =>
+      actuels.includes(numero)
+        ? actuels.filter((n) => n !== numero)
+        : [...actuels, numero]
+    );
+  };
 
   return (
-    <ScrollView style={styles.container}>
+    //<ScrollView style={styles.container}>
+    <View style={styles.container}>
       <Titre />
 
       <Text style={styles.count}>
-        Vous avez : {count} Poké Ball{count > 1 ? "s" : ""}
+        Vous avez : {count} Poké Ball{count > 1 ? "s" : ""} ; {captured.length} capture{captured.length > 1 ? "s" : ""}
       </Text>
 
       <View style={styles.buttonsContainer}>
@@ -54,9 +52,12 @@ export default function Index() {
 
       <Aide />
 
-      <Pressable style={styles.button} onPress={() => setFeuUniquement(!feuUniquement)}>
+      <Pressable
+        style={styles.button}
+        onPress={() => setCapturesSeulement(!capturesSeulement)}
+      >
         <Text style={styles.buttonText}>
-          {feuUniquement ? "Tout afficher" : "Seulement le type Feu"}
+          {capturesSeulement ? "Tout afficher" : "Mes captures"}
         </Text>
       </Pressable>
 
@@ -67,24 +68,37 @@ export default function Index() {
         onChangeText={setSearch}
       />
 
-      {visibles.length === 0 ? (
-        <Text style={styles.count}>Aucun Pokémon trouvé</Text>
-      ) : (
-        visibles.map((pokemon) => (
-        <PokemonCard
-          key={pokemon.number}
-          number={pokemon.number}
-          name={pokemon.name}
-          type={pokemon.type}
-        />
-        ))
-      )}
-    </ScrollView>
+      <FlatList
+        data={visibles}
+        extraData={captured}
+        keyExtractor={(pokemon) => pokemon.number.toString()}
+        numColumns={2}
+        contentContainerStyle={{ padding: 8, gap: 6  }}
+        columnWrapperStyle={{ gap: 12 }}
+        renderItem={({ item: pokemon }) => (
+          <PokemonCard
+            number={pokemon.number}
+            name={pokemon.name}
+            type={pokemon.type}
+            captured={captured.includes(pokemon.number)}
+            onCapture={() => basculerCapture(pokemon.number)}
+          />
+        )}
+        ListEmptyComponent={
+          <Text style={styles.count}>
+            {capturesSeulement
+              ? "Vous n'avez encore rien capturé"
+              : "Aucun Pokémon trouvé"}
+          </Text>
+        }
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: "#f5f5f5",
   },
 
