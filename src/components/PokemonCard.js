@@ -4,19 +4,21 @@ const ARTWORK =
     "https://raw.githubusercontent.com/PokeAPI/sprites" +
     "/master/sprites/pokemon/other/official-artwork/";
 
-export default function PokemonCard({ number, name, captured, onCapture }) {
+export default function PokemonCard({ number, name, captured, onCapture, onPress }) {
     return (
         <View style={[styles.card, captured && styles.captured]}>
-            <Image source={{ uri: `${ARTWORK}${number}.png` }} style={styles.image} />
-            <View>
-                <Text style={styles.number}>#{number}</Text>
-                <Text style={styles.name}>{name}</Text>
-                <Pressable style={styles.button} onPress={onCapture}>
-                    <Text style={styles.buttonText}>
-                        {captured ? "Capturé ✓" : "Capturer"}
-                    </Text>
-                </Pressable>
-            </View>
+            <Pressable style={styles.details} onPress={onPress}>
+                <Image source={{ uri: `${ARTWORK}${number}.png` }} style={styles.image} />
+                <View>
+                    <Text style={styles.number}>#{number}</Text>
+                    <Text style={styles.name}>{name}</Text>
+                </View>
+            </Pressable>
+            <Pressable style={styles.button} onPress={onCapture}>
+                <Text style={styles.buttonText}>
+                    {captured ? "Capturé ✓" : "Capturer"}
+                </Text>
+            </Pressable>
         </View>
     );
 
@@ -28,11 +30,16 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: "row",
         alignItems: "center",
-        gap: 12,
         padding: 12, 
         borderColor: "#7d7d7dc3",
         borderRadius: 12,
         borderWidth: 3,
+    },
+    details: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
     },
     image: { width: 60, height: 60 },
     number: { color: "#888888" },
@@ -49,7 +56,6 @@ const styles = StyleSheet.create({
         borderWidth: 3
     },
     button: {
-        marginLeft: "auto",
         backgroundColor: "#4e4949a0",
         paddingHorizontal: 10,
         paddingVertical: 6,
