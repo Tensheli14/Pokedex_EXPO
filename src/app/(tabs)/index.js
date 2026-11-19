@@ -1,18 +1,22 @@
-import { useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 
 import Aide from "../../components/Aide";
 import PokemonCard from "../../components/PokemonCard";
 import Titre from "../../components/Titre";
-import POKEMONS from "../../data/pokemons";
+
+const API = "https://pokeapi.co/api/v2/pokemon?limit=151";
 
 export default function Index() {
   const [count, setCount] = useState(0);
   const [captured, setCaptured] = useState([]);
   const [capturesSeulement, setCapturesSeulement] = useState(false);
   const [search, setSearch] = useState("");
-  const visibles = POKEMONS.filter((pokemon) =>
+  const [pokemons, setPokemons] = useState([]);
+  const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState("");
+  const visibles = pokemons.filter((pokemon) =>
     (!capturesSeulement || captured.includes(pokemon.number)) &&
     pokemon.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -23,6 +27,53 @@ export default function Index() {
         : [...actuels, numero]
     );
   };
+  useEffect(() => {
+    let actif = true;
+
+    async function charger() {
+      try {
+        const reponse = await fetch(API);
+        if (!reponse.ok) {
+          throw new Error(`La PokéAPI a répondu avec le statut ${reponse.status}.`);
+        }
+
+        const data = await reponse.json();
+        if (
+          !Array.isArray(data.results) ||
+          data.results.length !== 151 ||
+          data.results.some((pokemon) => typeof pokemon.name !== "string")
+        ) {
+          throw new Error("La PokéAPI n'a pas renvoyé les 151 premiers Pokémon.");
+        }
+
+        const liste = data.results.map((pokemon, index) => ({
+          number: index + 1,
+          name: pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1),
+        }));
+
+        if (actif) {
+          setPokemons(liste);
+        }
+      } catch (error) {
+        if (actif) {
+          setErreur(
+            error instanceof Error
+              ? `Impossible de charger les Pokémon : ${error.message}`
+              : "Impossible de charger les Pokémon."
+          );
+        }
+      } finally {
+        if (actif) {
+          setChargement(false);
+        }
+      }
+    }
+
+    charger();
+    return () => {  
+      actif = false;
+    };
+  }, []);
 
   return (
     //<ScrollView style={styles.container}>
@@ -48,7 +99,7 @@ export default function Index() {
       </View>
 
       <Text style={styles.count}>
-        Nombre de Pokémon : {POKEMONS.length}
+        Nombre de Pokémon : {chargement ? "..." : pokemons.length}
       </Text>
 
       <Aide />
@@ -87,11 +138,19 @@ export default function Index() {
           />
         )}
         ListEmptyComponent={
-          <Text style={styles.count}>
-            {capturesSeulement
-              ? "Vous n'avez encore rien capturé"
-              : "Aucun Pokémon trouvé"}
-          </Text>
+          chargement ? (
+            <View style={styles.loading}>
+              <ActivityIndicator size="large" color="#E53935" />
+              <Text style={styles.loadingText}>Chargement des Pokémon...</Text>
+            </View>
+          ) : (
+            <Text style={styles.count}>
+              {erreur ||
+                (capturesSeulement
+                  ? "Vous n'avez encore rien capturé"
+                  : "Aucun Pokémon trouvé")}
+            </Text>
+          )
         }
       />
     </View>
@@ -143,6 +202,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     margin: 15,
+    fontSize: 16,
+  },
+
+  loading: {
+    alignItems: "center",
+    paddingVertical: 32,
+  },
+
+  loadingText: {
+    marginTop: 12,
+    color: "#555",
     fontSize: 16,
   },
 });
